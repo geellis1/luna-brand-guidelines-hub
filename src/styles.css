@@ -6,6 +6,23 @@
   font-display: swap;
 }
 
+/* Brand faces: Shunsine sets LUNA, Cotoris Bold sets CIVIC STRATEGIES. */
+@font-face {
+  font-family: 'ShunsineFont';
+  src: url('/fonts/Shunsine.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CotorisFont';
+  src: url('/fonts/CotorisBold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ─────────────────────────────────────────────────────────────
    Tool chrome is intentionally neutral: greys, black, white.
    The only colour on the page comes from the options themselves.
@@ -71,7 +88,6 @@ body {
 .card-kicker,
 .section-label,
 .masthead-utility,
-.landing-kicker,
 .specimen-label {
   font-size: 11px;
   font-weight: 500;
@@ -92,11 +108,14 @@ input:focus-visible {
 
 /* ── Landing ─────────────────────────────────────────────── */
 .landing {
-  --landing-bg: #f5f0e8;
+  --landing-bg: #3e1921; /* Night Bordeaux */
+  --landing-ink: #f5f0e8; /* cream */
   --curtain: cubic-bezier(0.22, 0.61, 0.36, 1);
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--landing-bg);
+  color: var(--landing-ink);
+  color-scheme: dark;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas: 'copy art';
@@ -174,26 +193,35 @@ input:focus-visible {
   max-width: 640px;
 }
 
-.landing-kicker {
-  margin: 0 0 clamp(20px, 3vw, 32px);
-  color: var(--muted);
-  opacity: 0;
-  animation: landing-fade-in 1.4s var(--curtain) 0.3s forwards;
+.landing :focus-visible {
+  outline-color: var(--landing-ink);
 }
 
 .landing-title {
   margin: 0;
-  font-family: var(--display);
   font-size: clamp(52px, 7.4vw, 140px);
   font-weight: 400;
   line-height: 0.92;
-  letter-spacing: 0.01em;
   text-transform: uppercase;
 }
 
 .landing-line {
   display: block;
   white-space: nowrap;
+}
+
+.landing-line--shunsine {
+  font-family: 'ShunsineFont', var(--display);
+  font-size: 1.5em;
+  line-height: 1;
+}
+
+.landing-line--cotoris {
+  font-family: 'CotorisFont', var(--ui);
+  font-weight: 700;
+  font-size: 0.5em;
+  line-height: 1.25;
+  letter-spacing: 0.08em;
 }
 
 .type-ghost {
@@ -232,9 +260,9 @@ input:focus-visible {
   margin: clamp(28px, 4vw, 44px) 0 clamp(24px, 3vw, 36px);
   font-family: var(--serif);
   font-style: italic;
-  font-weight: 400;
+  font-weight: 300;
   font-size: clamp(20px, 2vw, 27px);
-  color: var(--muted);
+  color: var(--landing-ink);
   letter-spacing: -0.005em;
 }
 
@@ -268,8 +296,8 @@ input:focus-visible {
   gap: 0;
   width: min(440px, 100%);
   padding: 6px;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(20, 18, 16, 0.14);
+  background: rgba(245, 240, 232, 0.06);
+  border: 1px solid rgba(245, 240, 232, 0.22);
   border-radius: 20px;
   transition:
     border-color 0.3s,
@@ -277,69 +305,68 @@ input:focus-visible {
 }
 
 .landing-form:focus-within {
-  border-color: var(--ink);
-  background: rgba(255, 255, 255, 0.8);
+  border-color: var(--landing-ink);
+  background: rgba(245, 240, 232, 0.1);
 }
 
 .landing-form input {
   min-width: 0;
   font: inherit;
   font-size: 16px;
-  color: var(--ink);
+  color: var(--landing-ink);
   background: transparent;
   border: 0;
-  border-bottom: 1px solid rgba(20, 18, 16, 0.1);
   padding: 13px 16px;
 }
 
-.landing-form .button {
+.landing-form input.is-shaking {
+  animation: landing-shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes landing-shake {
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+.landing-form .landing-enter {
   margin-top: 6px;
+  width: 100%;
   padding: 12px 20px;
   border-radius: 14px;
-}
-
-.landing-notice {
-  margin: 12px 0 0;
-  font-size: 14px;
-  color: var(--ink-2);
-}
-
-.landing-note .link-button {
-  font-size: 13px;
-  color: var(--ink-2);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  background: var(--landing-ink);
+  border-color: var(--landing-ink);
+  color: var(--landing-bg);
 }
 
 .landing-form input::placeholder {
-  color: #8f8a80;
+  color: rgba(245, 240, 232, 0.5);
 }
 
 .landing-form input:focus {
   outline: none;
 }
 
-.landing-sent {
-  margin: 0;
-  max-width: 520px;
-  font-size: 16px;
-}
-
-.landing-sent .link-button {
-  margin-left: 4px;
-}
-
-.landing-note {
-  margin: 16px 0 0;
+.landing-error {
+  margin: 12px 0 0;
   font-size: 13px;
-  color: var(--muted);
+  color: var(--landing-ink);
+  opacity: 0.8;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-art,
-  .landing-kicker {
+  .landing-art {
     animation: none;
     opacity: 1;
+  }
+
+  .landing-form input.is-shaking {
+    animation-duration: 0.01s;
   }
 
   .landing-image,
@@ -641,6 +668,38 @@ input:focus-visible {
 
 .logo-mark--card {
   width: 86%;
+}
+
+/* ── Downloads ───────────────────────────────────────────── */
+.download-sample {
+  padding: 0 24px;
+  font-size: clamp(32px, 4vw, 56px);
+  line-height: 1;
+  text-align: center;
+}
+
+.download-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+}
+
+.download-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.download-use {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.download-card .button {
+  text-decoration: none;
 }
 
 /* Logo cards open the lightbox */
@@ -2061,11 +2120,6 @@ html.touring {
     0 0 0 6px var(--surface),
     0 0 0 7px rgba(255, 255, 255, 0.9),
     0 0 36px 12px rgba(255, 255, 255, 0.3);
-}
-
-/* During the reactions step, show the heart / X controls on the first palette */
-html.touring-reactions [data-tour='palette-first'] .reaction-actions {
-  opacity: 1;
 }
 
 .tour-card {

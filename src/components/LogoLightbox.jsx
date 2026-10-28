@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { CommentThread } from './CommentThread'
 import { LogoMark } from './LogoMark'
 import { OriginTag } from './OriginTag'
 
@@ -9,8 +8,8 @@ function isTyping(target) {
   return target.closest?.('input, textarea, select, [contenteditable]')
 }
 
-// Large view of one logo with its comment thread; ←/→ step through logos.
-export function LogoLightbox({ logos, index, onNavigate, onClose, onOpenInVisualizer, comments, ...threadProps }) {
+// Large view of one logo; ←/→ step through logos.
+export function LogoLightbox({ logos, index, onNavigate, onClose, onOpenInVisualizer }) {
   const ref = useRef(null)
   const logo = logos[index]
   const open = Boolean(logo)
@@ -64,13 +63,6 @@ export function LogoLightbox({ logos, index, onNavigate, onClose, onOpenInVisual
             <button type="button" className="lightbox-nav lightbox-nav--next" onClick={() => step(1)} aria-label="Next logo">
               ›
             </button>
-          </div>
-
-          <div className="lightbox-comments">
-            <p className="card-count">
-              {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
-            </p>
-            <CommentThread key={logo.id} item={logo} comments={comments} scroll {...threadProps} />
           </div>
         </div>
       )}

@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react'
+import { HUB_PASSWORD } from '../hooks/useHubAccess'
 
-const WORDS = ['Luna', 'Civic', 'Strategies']
+// Each word types in its brand face: Shunsine for the name, Cotoris for the rest.
+const WORDS = [
+  { text: 'LUNA', font: 'shunsine' },
+  { text: 'CIVIC', font: 'cotoris' },
+  { text: 'STRATEGIES', font: 'cotoris' },
+]
+const LENGTHS = WORDS.map((w) => w.text.length)
 
 // Unhurried timing: a soft start, an even typing pace, a breath between words.
 const START_DELAY = 700
@@ -13,13 +20,13 @@ const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
 // Types each word in turn; returns characters shown per word and whether it's finished.
-function useTypewriter(words, skip) {
-  const [counts, setCounts] = useState(() => words.map(() => 0))
-  const done = counts.every((n, i) => n === words[i].length)
+function useTypewriter(lengths, skip) {
+  const [counts, setCounts] = useState(() => lengths.map(() => 0))
+  const done = counts.every((n, i) => n === lengths[i])
 
   useEffect(() => {
     if (skip) {
-      setCounts(words.map((w) => w.length))
+      setCounts([...lengths])
       return
     }
     let timer
@@ -30,10 +37,10 @@ function useTypewriter(words, skip) {
       // Capture now: the updater runs later, after word/char may have moved on.
       const [w, c] = [word, char]
       setCounts((prev) => prev.map((n, i) => (i === w ? c : n)))
-      if (char < words[word].length) {
+      if (char < lengths[word]) {
         // Slight variation keeps it feeling hand-typed rather than mechanical.
         timer = setTimeout(tick, CHAR_MS + Math.random() * 40 - 20)
-      } else if (word < words.length - 1) {
+      } else if (word < lengths.length - 1) {
         word += 1
         char = 0
         timer = setTimeout(tick, WORD_PAUSE)
@@ -41,30 +48,20 @@ function useTypewriter(words, skip) {
     }
     timer = setTimeout(tick, START_DELAY)
     return () => clearTimeout(timer)
-  }, [words, skip])
+  }, [lengths, skip])
 
   return { counts, done }
 }
 
-// Entry point for signed-out visitors: collage, typed masthead, email + password form.
-export function Landing({ auth }) {
+// Entry point for visitors without access: collage, typed masthead, shared password.
+export function Landing({ onUnlock }) {
   const [skip, setSkip] = useState(prefersReducedMotion)
-  const { counts, done } = useTypewriter(WORDS, skip)
+  const { counts, done } = useTypewriter(LENGTHS, skip)
   const [stage, setStage] = useState(skip ? 'form' : 'typing') // typing → tagline → form
 
-  const [mode, setMode] = useState('signup') // signup | signin
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [state, setState] = useState('idle') // idle | sending
   const [error, setError] = useState(null)
-  const [notice, setNotice] = useState(null)
-
-  const switchMode = (next, message = null) => {
-    setMode(next)
-    setError(null)
-    setNotice(message)
-  }
+  const [shaking, setShaking] = useState(false)
 
   useEffect(() => {
     if (!done) return
@@ -89,38 +86,15 @@ export function Landing({ auth }) {
     }
   }, [stage])
 
-  async function submit(e) {
+  function submit(e) {
     e.preventDefault()
-    setState('sending')
-    setError(null)
-    setNotice(null)
-    const cleanEmail = email.trim()
-    try {
-      if (mode === 'signup') {
-        await auth.signUpWithPassword(cleanEmail, password, name.trim())
-        // Signed in straight away; the app takes over from here.
-      } else {
-        await auth.signInWithPassword(cleanEmail, password)
-      }
-    } catch (err) {
-      const msg = err.message ?? ''
-      if (/already registered|already been registered/i.test(msg)) {
-        switchMode('signin', 'You already have an account. Sign in with your password.')
-      } else if (/invalid login credentials/i.test(msg)) {
-        setError("That email and password don't match. Try again, or create your account if you're new.")
-      } else if (msg === 'CONFIRM_EMAIL_ON') {
-        setError('Account created, but Supabase still requires email confirmation. Turn off "Confirm email" in Supabase, then sign in.')
-      } else {
-        setError(msg || 'Something went wrong. Try again.')
-      }
-    }
-    setState('idle')
+    if (HUB_PASSWORD && password === HUB_PASSWORD) return onUnlock()
+    setError(HUB_PASSWORD ? 'Incorrect password' : 'No hub password is set yet (VITE_HUB_PASSWORD).')
+    setShaking(true)
   }
 
-  const submitLabel = mode === 'signup' ? 'Enter' : 'Sign in'
-
   // Index of the word currently being typed (the cursor sits after it).
-  const active = counts.findIndex((n, i) => n < WORDS[i].length)
+  const active = counts.findIndex((n, i) => n < LENGTHS[i])
   const cursorAt = done ? -1 : active
 
   return (
@@ -137,86 +111,49 @@ export function Landing({ auth }) {
       </div>
 
       <div className="landing-copy-col">
-        <p className="landing-kicker">Phase 1 · Brand exploration</p>
-
         <h1 className="landing-title" aria-label="Luna Civic Strategies">
-          {WORDS.map((word, i) => (
-            <span key={word} className="landing-line" aria-hidden="true">
-              <span>{word.slice(0, counts[i])}</span>
+          {WORDS.map(({ text, font }, i) => (
+            <span key={text} className={`landing-line landing-line--${font}`} aria-hidden="true">
+              <span>{text.slice(0, counts[i])}</span>
               {cursorAt === i && <span className="type-cursor" />}
               {/* The untyped remainder holds the line's width so nothing shifts. */}
-              <span className="type-ghost">{word.slice(counts[i])}</span>
+              <span className="type-ghost">{text.slice(counts[i])}</span>
             </span>
           ))}
         </h1>
 
-        <p className="landing-copy">A private brand exploration space.</p>
+        <p className="landing-copy">Luna Civic Strategies · Brand Hub</p>
 
         <div className="landing-form-wrap" aria-hidden={stage !== 'form'}>
-            <form className={`landing-form landing-form--${mode}`} onSubmit={submit}>
-              {mode === 'signup' && (
-                <>
-                  <label className="visually-hidden" htmlFor="landing-name">
-                    Your name
-                  </label>
-                  <input
-                    id="landing-name"
-                    required
-                    autoComplete="given-name"
-                    placeholder="Your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </>
-              )}
-              <label className="visually-hidden" htmlFor="landing-email">
-                Email
-              </label>
-              <input
-                id="landing-email"
-                type="email"
-                required
-                autoComplete="email"
-                placeholder="Your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <label className="visually-hidden" htmlFor="landing-password">
-                Password
-              </label>
-              <input
-                id="landing-password"
-                type="password"
-                required
-                minLength={6}
-                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                placeholder={mode === 'signup' ? 'Choose a password (6+ characters)' : 'Password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button type="submit" className="button" disabled={state === 'sending'}>
-                {state === 'sending' ? 'One moment…' : submitLabel}
-              </button>
-            </form>
-          {notice && <p className="landing-notice">{notice}</p>}
-          {error && <p className="form-error">{error}</p>}
-          <p className="landing-note">
-            {mode === 'signup' ? (
-              <>
-                Been here before?{' '}
-                <button type="button" className="link-button" onClick={() => switchMode('signin')}>
-                  Sign in
-                </button>
-              </>
-            ) : (
-              <>
-                First time?{' '}
-                <button type="button" className="link-button" onClick={() => switchMode('signup')}>
-                  Create your account
-                </button>
-              </>
-            )}
-          </p>
+          <form className="landing-form" onSubmit={submit}>
+            <label className="visually-hidden" htmlFor="landing-password">
+              Password
+            </label>
+            <input
+              id="landing-password"
+              type="password"
+              required
+              autoComplete="current-password"
+              placeholder="Enter password"
+              className={shaking ? 'is-shaking' : undefined}
+              onAnimationEnd={() => setShaking(false)}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? 'landing-error' : undefined}
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                setError(null)
+              }}
+            />
+            <button type="submit" className="button landing-enter">
+              Enter
+            </button>
+          </form>
+          {error && (
+            <p id="landing-error" className="landing-error" role="alert">
+              {error}
+            </p>
+          )}
         </div>
       </div>
     </main>

@@ -6,9 +6,7 @@ import { isSvgUrl, loadSvg } from '../lib/svg'
 import { PaletteStrip } from './PaletteStrip'
 import { LogoRail } from './LogoRail'
 import { LogoMark } from './LogoMark'
-import { CommentsPanel } from './CommentsPanel'
 import { SavedLooks } from './SavedLooks'
-import { BottomSheet } from './BottomSheet'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import { RoundSwitch } from './RoundSwitch'
 
@@ -26,7 +24,7 @@ function isTyping(target) {
 
 const roundOf = (item) => item?.round ?? 1
 
-export function Visualizer({ allLogos, allPalettes, hasRound2, commentsFor, saved, ...threadProps }) {
+export function Visualizer({ allLogos, allPalettes, hasRound2, saved, user }) {
   // Logos and palettes each pick a round, so Round 1 logos can be compared
   // against Round 2 palettes. Both default to the active round.
   const defaultRound = hasRound2 ? 2 : 1
@@ -48,10 +46,9 @@ export function Visualizer({ allLogos, allPalettes, hasRound2, commentsFor, save
   const [saveState, setSaveState] = useState({ busy: false, error: null })
   // Last palette colour picked, so "View in color" can bring it back.
   const [lastColor, setLastColor] = useState(null)
-  // Phones get compact controls: collapsed pickers and a comments drawer.
+  // Phones get compact controls: collapsed pickers.
   const isMobile = useMediaQuery('(max-width: 720px)')
   const [openPicker, setOpenPicker] = useState(null) // 'mark' | 'accent' | null
-  const [commentsOpen, setCommentsOpen] = useState(false)
   const togglePicker = (which) => setOpenPicker((cur) => (cur === which ? null : which))
 
   const logoIndex = Math.max(0, logos.findIndex((l) => l.slug === logoSlug))
@@ -157,7 +154,7 @@ export function Visualizer({ allLogos, allPalettes, hasRound2, commentsFor, save
       (mark === BLACK ? isBlack(l.mark_hex) : sameHex(l.mark_hex, mark.hex)) &&
       sameAccent(l.accent_hex, accent?.hex),
   )
-  const canSave = saved.status !== 'offline' && threadProps.user
+  const canSave = saved.status !== 'offline' && user
 
   async function save() {
     setSaveState({ busy: true, error: null })
@@ -246,12 +243,6 @@ export function Visualizer({ allLogos, allPalettes, hasRound2, commentsFor, save
       {current ? 'Saved ✓' : saveState.busy ? 'Saving…' : 'Save this look'}
     </button>
   )
-
-  const commentTabs = [
-    { key: 'logo', label: 'On this logo', item: logo, subject: logo.name },
-    { key: 'palette', label: 'On this palette', item: palette, subject: `Palette ${pad(paletteIndex + 1)} · ${palette.name}` },
-  ]
-  const commentCount = (commentsFor[logo.id]?.length ?? 0) + (commentsFor[palette.id]?.length ?? 0)
 
   // Palette colours as a conic swatch for the mobile colour toggle.
   const paletteRing = `conic-gradient(${colors.map((c, i) => `${c.hex} ${(i / colors.length) * 360}deg ${((i + 1) / colors.length) * 360}deg`).join(', ')})`
@@ -347,25 +338,8 @@ export function Visualizer({ allLogos, allPalettes, hasRound2, commentsFor, save
             )}
             {saveState.error && <p className="form-error viz-error">{saveState.error}</p>}
           </div>
-
-          {isMobile ? (
-            <button type="button" className="comments-trigger" onClick={() => setCommentsOpen(true)}>
-              <span>
-                Comments <span className="tab-count">{commentCount}</span>
-              </span>
-              <span aria-hidden="true">⌃</span>
-            </button>
-          ) : (
-            <CommentsPanel tabs={commentTabs} commentsFor={commentsFor} {...threadProps} />
-          )}
         </div>
       </div>
-
-      {isMobile && (
-        <BottomSheet open={commentsOpen} onClose={() => setCommentsOpen(false)} title="Comments">
-          <CommentsPanel tabs={commentTabs} commentsFor={commentsFor} {...threadProps} />
-        </BottomSheet>
-      )}
 
       {saved.status !== 'offline' && (
         <SavedLooks
@@ -373,7 +347,7 @@ export function Visualizer({ allLogos, allPalettes, hasRound2, commentsFor, save
           logos={allLogos}
           palettes={allPalettes}
           showRounds={hasRound2}
-          user={threadProps.user}
+          user={user}
           currentId={current?.id}
           onOpen={openLook}
           onDelete={(id) => saved.deleteLook(id).catch((err) => setSaveState({ busy: false, error: err.message }))}

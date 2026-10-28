@@ -2,16 +2,16 @@ import { useState } from 'react'
 import { isConfigured } from './lib/supabase'
 import { useAuth } from './hooks/useAuth'
 import { useBrandItems } from './hooks/useBrandItems'
-import { useComments } from './hooks/useComments'
 import { useSavedLooks } from './hooks/useSavedLooks'
-import { useReactions } from './hooks/useReactions'
 import { useProfile } from './hooks/useProfile'
 import { useUrlParam } from './hooks/useUrlParam'
+import { useHubAccess } from './hooks/useHubAccess'
 import { Header } from './components/Header'
 import { Landing } from './components/Landing'
 import { LogosView } from './components/LogosView'
 import { PalettesView } from './components/PalettesView'
 import { Visualizer } from './components/Visualizer'
+import { DownloadsView } from './components/DownloadsView'
 import { TypeDialog } from './components/TypeDialog'
 import { NameDialog } from './components/NameDialog'
 import { Tour } from './components/Tour'
@@ -21,11 +21,10 @@ import { RoundSwitch } from './components/RoundSwitch'
 const SHOW_TYPE_PAIRING = false
 
 export default function App() {
+  const hub = useHubAccess()
   const auth = useAuth()
   const { byType, loading, error } = useBrandItems()
-  const comments = useComments()
   const saved = useSavedLooks()
-  const reactions = useReactions(auth.user)
   const me = useProfile(auth.user)
   const [nameOpen, setNameOpen] = useState(false)
   const [namePromptDismissed, setNamePromptDismissed] = useState(false)
@@ -51,17 +50,15 @@ export default function App() {
     { key: 'logos', label: 'Logos', count: logos.length },
     { key: 'palettes', label: 'Palettes', count: palettes.length },
     { key: 'visualizer', label: 'Visualizer' },
+    { key: 'downloads', label: 'Downloads' },
   ]
   const view = views.some((v) => v.key === viewParam) ? viewParam : 'logos'
 
-  const threadProps = { api: comments, user: auth.user, commentsFor: comments.byItem }
-
-  // Signed-out visitors see the landing page. Without Supabase (local
-  // preview) there's no sign-in, so go straight to the explorer.
-  if (isConfigured && !auth.ready) return null
-  // ?preview=landing shows the landing page even when signed in (for design review).
+  // Everyone enters through the shared hub password on the landing page.
+  // ?preview=landing shows the landing page even when unlocked (for design review).
   const previewLanding = new URLSearchParams(window.location.search).get('preview') === 'landing'
-  if ((isConfigured && !auth.user) || previewLanding) return <Landing auth={auth} />
+  if (!hub.unlocked || previewLanding) return <Landing onUnlock={hub.unlock} />
+  if (isConfigured && !auth.ready) return null
 
   // Ask once for a name if the profile doesn't have one yet.
   const needsName = me.loaded && !me.profile?.display_name && !namePromptDismissed
@@ -93,7 +90,10 @@ export default function App() {
       <Header
         user={auth.user}
         onStartTour={() => setTourOpen(true)}
-        onSignOut={auth.signOut}
+        onSignOut={() => {
+          if (auth.user) auth.signOut()
+          hub.lock()
+        }}
         onOpenType={typeItem ? () => setTypeOpen(true) : null}
         views={views}
         view={view}
@@ -104,20 +104,19 @@ export default function App() {
       />
 
       <main className="explorer">
-        {!isConfigured && (
-          <p className="notice">Preview mode: Supabase isn't connected, so sign-in, comments and saving are off.</p>
-        )}
         {error && <p className="notice notice--error">Couldn't load brand items: {error.message}</p>}
 
         {loading ? (
           <p className="loading">Loading…</p>
+        ) : view === 'downloads' ? (
+          <DownloadsView />
         ) : view === 'visualizer' ? (
           <Visualizer
             allLogos={allLogos}
             allPalettes={allPalettes}
             hasRound2={hasRound2}
             saved={saved}
-            {...threadProps}
+            user={auth.user}
           />
         ) : (
           <>
@@ -125,7 +124,7 @@ export default function App() {
               <div className="round-bar">
                 <RoundSwitch round={round} onChange={setRound} />
                 {round === 1 && (
-                  <p className="round-note">You're viewing the archive. Earlier directions, with all comments and reactions kept.</p>
+                  <p className="round-note">You're viewing the archive of earlier directions.</p>
                 )}
               </div>
             )}
@@ -140,10 +139,9 @@ export default function App() {
                   setView('visualizer')
                   window.scrollTo({ top: 0 })
                 }}
-                {...threadProps}
               />
             ) : (
-              <PalettesView palettes={palettes} reactions={reactions} {...threadProps} />
+              <PalettesView palettes={palettes} />
             )}
           </>
         )}
@@ -169,9 +167,6 @@ export default function App() {
           open={typeOpen}
           onClose={() => setTypeOpen(false)}
           item={typeItem}
-          comments={comments.byItem[typeItem.id] ?? []}
-          api={comments}
-          user={auth.user}
         />
       )}
     </>

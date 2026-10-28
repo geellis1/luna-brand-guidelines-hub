@@ -1,8 +1,7 @@
-import { CommentThread } from './CommentThread'
 import { OriginTag } from './OriginTag'
 
-// One option (logo or palette) with its comment thread attached beneath it.
-export function ItemCard({ item, kicker, stageClass, children, comments, onOpen, openLabel, ...threadProps }) {
+// One option (logo or palette) with its name and notes beneath it.
+export function ItemCard({ item, kicker, stageClass, children, onOpen, openLabel }) {
   return (
     <article className="card" id={item.slug}>
       {onOpen ? (
@@ -21,13 +20,9 @@ export function ItemCard({ item, kicker, stageClass, children, comments, onOpen,
             {kicker && <span className="card-kicker">{kicker}</span>}
             {item.name}
           </h3>
-          <span className="card-count">
-            {comments.length} {comments.length === 1 ? 'comment' : 'comments'}
-          </span>
         </header>
         <OriginTag item={item} />
         {item.description && <p className="card-description">{item.description}</p>}
-        <CommentThread item={item} comments={comments} {...threadProps} />
       </div>
     </article>
   )

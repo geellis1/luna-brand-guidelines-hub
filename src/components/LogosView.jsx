@@ -3,11 +3,10 @@ import { ItemCard } from './ItemCard'
 import { LogoLightbox } from './LogoLightbox'
 import { LogoMark } from './LogoMark'
 
-export function LogosView({ logos, commentsFor, onOpenInVisualizer, ...threadProps }) {
+export function LogosView({ logos, onOpenInVisualizer }) {
   // The open logo lives in the URL, so a link can point straight at it.
   const [openSlug, setOpenSlug] = useUrlParam('logo')
   const openIndex = logos.findIndex((l) => l.slug === openSlug)
-  const openLogo = logos[openIndex]
 
   return (
     <>
@@ -19,8 +18,6 @@ export function LogosView({ logos, commentsFor, onOpenInVisualizer, ...threadPro
             stageClass="card-stage--logo"
             onOpen={() => setOpenSlug(logo.slug)}
             openLabel={`Open ${logo.name} larger`}
-            comments={commentsFor[logo.id] ?? []}
-            {...threadProps}
           >
             <LogoMark item={logo} color="#020202" className="logo-mark--card" />
           </ItemCard>
@@ -33,8 +30,6 @@ export function LogosView({ logos, commentsFor, onOpenInVisualizer, ...threadPro
         onNavigate={(logo) => setOpenSlug(logo.slug)}
         onClose={() => setOpenSlug(null)}
         onOpenInVisualizer={onOpenInVisualizer}
-        comments={openLogo ? (commentsFor[openLogo.id] ?? []) : []}
-        {...threadProps}
       />
     </>
   )

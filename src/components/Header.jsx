@@ -15,7 +15,7 @@ export function Header({ user, onSignOut, onOpenType, onStartTour, views, view, 
               ?<span className="help-tooltip" aria-hidden="true">How to use this</span>
             </button>
           )}
-          {user && (
+          {onSignOut && (
             <button type="button" className="link-button" onClick={onSignOut}>
               Sign out
             </button>

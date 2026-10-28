@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { TypeSpecimen } from './TypeSpecimen'
-import { CommentThread } from './CommentThread'
 
-export function TypeDialog({ open, onClose, item, comments, ...threadProps }) {
+export function TypeDialog({ open, onClose, item }) {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -21,9 +20,6 @@ export function TypeDialog({ open, onClose, item, comments, ...threadProps }) {
         <h2 className="dialog-title">{item.name}</h2>
         {item.description && <p className="dialog-copy">{item.description}</p>}
         <TypeSpecimen item={item} />
-        <div className="dialog-thread">
-          <CommentThread item={item} comments={comments} {...threadProps} />
-        </div>
       </div>
     </dialog>
   )

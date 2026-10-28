@@ -5,13 +5,13 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 const STEPS = [
   {
     title: 'Welcome',
-    body: "Welcome to the Luna brand hub. This is a private space to explore logo directions, color palettes, and what feels right. Poke around, share your reactions, and don't hold back — that's what this is for.",
+    body: "Welcome to the Luna brand hub. This is a private space to explore logo directions, color palettes, and how they work together. Here's a quick look around.",
     cta: "Let's explore →",
     center: true,
   },
   {
     title: 'Logos',
-    body: 'First stop: the logos. Click any one to see it up close. Drop your thoughts in the comments below each — they show up instantly for everyone in this space.',
+    body: 'First stop: the logos. Click any one to see it up close, and use ← and → to step through them.',
     cta: 'Next →',
     view: 'logos',
     lift: ['tab-logos', 'logo-grid'],
@@ -31,23 +31,13 @@ const STEPS = [
   },
   {
     title: 'Palettes',
-    body: "Now the fun part. These are the color palette directions. Heart the ones that feel right. X the ones that don't. Get as specific or as general as you want — every reaction counts.",
+    body: "These are the color palette directions, each shown with its color names and hex values.",
     cta: 'Next →',
     view: 'palettes',
     lift: ['tab-palettes', 'palette-sections'],
     anchor: 'palette-sections',
     align: 'end', // keep clear of the highlighted tab on the left
     scroll: 'top',
-  },
-  {
-    title: 'Reactions',
-    body: "Tap ♡ on a color you love. Tap ✕ on one that's not it. You can also heart the whole palette at once. Reactions are saved automatically and visible to everyone in this space as you make them.",
-    cta: 'Next →',
-    view: 'palettes',
-    lift: ['palette-first'],
-    anchor: 'palette-first',
-    scroll: 'anchor',
-    showReactions: true,
   },
   {
     title: 'Visualizer',
@@ -88,17 +78,8 @@ const STEPS = [
     event: 'luna:show-accent-logo',
   },
   {
-    title: 'Saved looks',
-    body: "Find something that clicks? Save it. Every saved combination gets collected so we can look back at what's resonating and build from there.",
-    cta: 'Next →',
-    view: 'visualizer',
-    lift: ['save-look'],
-    anchor: 'save-look',
-    scroll: 'anchor',
-  },
-  {
     title: "You're all set",
-    body: "One last thing — this space is live. Your comments, reactions, and saves are visible in real time to everyone with access. So go ahead, be opinionated. That's exactly what this is for. 🎉",
+    body: "That's it. Brand fonts are in the Downloads tab whenever you need them.",
     cta: "Let's go →",
     center: true,
   },
@@ -135,7 +116,7 @@ export function Tour({ open, setView, onFinish }) {
     if (!open) return
     const root = document.documentElement
     root.classList.add('touring')
-    return () => root.classList.remove('touring', 'touring-reactions')
+    return () => root.classList.remove('touring')
   }, [open])
 
   // Per step: switch view, wait for targets to render, scroll, lift them.
@@ -149,7 +130,6 @@ export function Tour({ open, setView, onFinish }) {
     setAnchorRect(null)
     if (step.view) setView(step.view)
     if (step.event) setTimeout(() => window.dispatchEvent(new Event(step.event)), 0)
-    document.documentElement.classList.toggle('touring-reactions', Boolean(step.showReactions))
 
     if (step.center) {
       setReady(true)
