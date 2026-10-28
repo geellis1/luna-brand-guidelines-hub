@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import { HUB_PASSWORD } from '../hooks/useHubAccess'
 
 // Each word types in its brand face: Shunsine for the name, Cotoris for the rest.
+// `line` groups words, so CIVIC STRATEGIES sits on one line beneath LUNA.
 const WORDS = [
-  { text: 'LUNA', font: 'shunsine' },
-  { text: 'CIVIC', font: 'cotoris' },
-  { text: 'STRATEGIES', font: 'cotoris' },
+  { text: 'LUNA', font: 'shunsine', line: 0 },
+  { text: 'CIVIC', font: 'cotoris', line: 1 },
+  { text: 'STRATEGIES', font: 'cotoris', line: 1 },
 ]
 const LENGTHS = WORDS.map((w) => w.text.length)
+const LINES = [0, 1].map((line) => WORDS.map((w, i) => ({ ...w, i })).filter((w) => w.line === line))
 
 // Unhurried timing: a soft start, an even typing pace, a breath between words.
 const START_DELAY = 700
@@ -112,12 +114,17 @@ export function Landing({ onUnlock }) {
 
       <div className="landing-copy-col">
         <h1 className="landing-title" aria-label="Luna Civic Strategies">
-          {WORDS.map(({ text, font }, i) => (
-            <span key={text} className={`landing-line landing-line--${font}`} aria-hidden="true">
-              <span>{text.slice(0, counts[i])}</span>
-              {cursorAt === i && <span className="type-cursor" />}
-              {/* The untyped remainder holds the line's width so nothing shifts. */}
-              <span className="type-ghost">{text.slice(counts[i])}</span>
+          {LINES.map((words) => (
+            <span key={words[0].text} className={`landing-line landing-line--${words[0].font}`} aria-hidden="true">
+              {words.map(({ text, i }, n) => (
+                <span key={text}>
+                  {n > 0 && ' '}
+                  <span>{text.slice(0, counts[i])}</span>
+                  {cursorAt === i && <span className="type-cursor" />}
+                  {/* The untyped remainder holds the line's width so nothing shifts. */}
+                  <span className="type-ghost">{text.slice(counts[i])}</span>
+                </span>
+              ))}
             </span>
           ))}
         </h1>

@@ -109,7 +109,9 @@ input:focus-visible {
 /* ── Landing ─────────────────────────────────────────────── */
 .landing {
   --landing-bg: #3e1921; /* Night Bordeaux */
-  --landing-ink: #f5f0e8; /* cream */
+  --landing-ink: #eee1d1; /* Almond Cream */
+  --landing-accent: #9ab7d5; /* Powder Blue */
+  --landing-crimson: #741734; /* Deep Crimson */
   --curtain: cubic-bezier(0.22, 0.61, 0.36, 1);
   min-height: 100vh;
   min-height: 100dvh;
@@ -158,16 +160,7 @@ input:focus-visible {
   width: 100%;
   max-width: min(720px, 86vh);
   height: auto;
-  /* The collage's paper is a hair off the page cream; feather the outer
-     edge so it melts into the background instead of showing a square. */
-  -webkit-mask-image:
-    linear-gradient(to right, transparent, #000 6%, #000 94%, transparent),
-    linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(to right, transparent, #000 6%, #000 94%, transparent),
-    linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
-  mask-composite: intersect;
+  /* Transparent cut-out: it sits straight on the background, no box. */
   animation: landing-breathe 6s ease-in-out infinite;
   will-change: transform;
 }
@@ -214,14 +207,17 @@ input:focus-visible {
   font-family: 'ShunsineFont', var(--display);
   font-size: 1.5em;
   line-height: 1;
+  color: var(--landing-ink);
 }
 
+/* Sized so CIVIC STRATEGIES stays on one line, about as wide as LUNA. */
 .landing-line--cotoris {
   font-family: 'CotorisFont', var(--ui);
   font-weight: 700;
-  font-size: 0.5em;
-  line-height: 1.25;
-  letter-spacing: 0.08em;
+  font-size: 0.41em;
+  line-height: 1.5;
+  letter-spacing: 0.12em;
+  color: var(--landing-accent);
 }
 
 .type-ghost {
@@ -262,7 +258,7 @@ input:focus-visible {
   font-style: italic;
   font-weight: 300;
   font-size: clamp(20px, 2vw, 27px);
-  color: var(--landing-ink);
+  color: var(--landing-accent);
   letter-spacing: -0.005em;
 }
 
@@ -293,20 +289,8 @@ input:focus-visible {
 .landing-form {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 10px;
   width: min(440px, 100%);
-  padding: 6px;
-  background: rgba(245, 240, 232, 0.06);
-  border: 1px solid rgba(245, 240, 232, 0.22);
-  border-radius: 20px;
-  transition:
-    border-color 0.3s,
-    background-color 0.3s;
-}
-
-.landing-form:focus-within {
-  border-color: var(--landing-ink);
-  background: rgba(245, 240, 232, 0.1);
 }
 
 .landing-form input {
@@ -315,8 +299,13 @@ input:focus-visible {
   font-size: 16px;
   color: var(--landing-ink);
   background: transparent;
-  border: 0;
+  border: 1px solid var(--landing-crimson);
+  border-radius: 14px;
   padding: 13px 16px;
+}
+
+.landing-form input:focus {
+  box-shadow: 0 0 0 1px var(--landing-crimson);
 }
 
 .landing-form input.is-shaking {
@@ -335,17 +324,16 @@ input:focus-visible {
 }
 
 .landing-form .landing-enter {
-  margin-top: 6px;
   width: 100%;
-  padding: 12px 20px;
+  padding: 13px 20px;
   border-radius: 14px;
-  background: var(--landing-ink);
-  border-color: var(--landing-ink);
-  color: var(--landing-bg);
+  background: var(--landing-crimson);
+  border-color: var(--landing-crimson);
+  color: var(--landing-ink);
 }
 
 .landing-form input::placeholder {
-  color: rgba(245, 240, 232, 0.5);
+  color: rgba(238, 225, 209, 0.5);
 }
 
 .landing-form input:focus {
