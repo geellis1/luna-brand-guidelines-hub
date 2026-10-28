@@ -27,14 +27,5 @@ export function useHubAccess() {
     setUnlocked(true)
   }, [])
 
-  const lock = useCallback(() => {
-    try {
-      localStorage.removeItem(KEY)
-    } catch {
-      // Nothing stored to clear.
-    }
-    setUnlocked(false)
-  }, [])
-
-  return { unlocked, unlock, lock }
+  return { unlocked, unlock }
 }
