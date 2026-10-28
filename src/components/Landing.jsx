@@ -1,34 +1,35 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { HUB_PASSWORD } from '../hooks/useHubAccess'
+import { LandingGoddess } from './LandingGoddess'
 
 // Each word types in its brand face: Shunsine for the name, Cotoris for the rest.
 // `line` groups words, so CIVIC STRATEGIES sits on one line beneath LUNA.
+// `charMs` paces each word: LUNA is slow (~1.5s), the rest types briskly.
 const WORDS = [
-  { text: 'LUNA', font: 'shunsine', line: 0 },
-  { text: 'CIVIC', font: 'cotoris', line: 1 },
-  { text: 'STRATEGIES', font: 'cotoris', line: 1 },
+  { text: 'LUNA', font: 'shunsine', line: 0, charMs: 450 },
+  { text: 'CIVIC', font: 'cotoris', line: 1, charMs: 100 },
+  { text: 'STRATEGIES', font: 'cotoris', line: 1, charMs: 100 },
 ]
-const LENGTHS = WORDS.map((w) => w.text.length)
 const LINES = [0, 1].map((line) => WORDS.map((w, i) => ({ ...w, i })).filter((w) => w.line === line))
 
-// Unhurried timing: a soft start, an even typing pace, a breath between words.
-const START_DELAY = 700
-const CHAR_MS = 100
+// LUNA starts typing at 0.5s, alongside the goddess reveal; a breath between
+// words; then the tagline, and the form 500ms after that.
+const START_DELAY = 500
 const WORD_PAUSE = 360
-const TAGLINE_AFTER = 450
-const FORM_AFTER = 1300
+const TAGLINE_AFTER = 300
+const FORM_AFTER = 500
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
 // Types each word in turn; returns characters shown per word and whether it's finished.
-function useTypewriter(lengths, skip) {
-  const [counts, setCounts] = useState(() => lengths.map(() => 0))
-  const done = counts.every((n, i) => n === lengths[i])
+function useTypewriter(words, skip) {
+  const [counts, setCounts] = useState(() => words.map(() => 0))
+  const done = counts.every((n, i) => n === words[i].text.length)
 
   useEffect(() => {
     if (skip) {
-      setCounts([...lengths])
+      setCounts(words.map((w) => w.text.length))
       return
     }
     let timer
@@ -39,10 +40,10 @@ function useTypewriter(lengths, skip) {
       // Capture now: the updater runs later, after word/char may have moved on.
       const [w, c] = [word, char]
       setCounts((prev) => prev.map((n, i) => (i === w ? c : n)))
-      if (char < lengths[word]) {
+      if (char < words[word].text.length) {
         // Slight variation keeps it feeling hand-typed rather than mechanical.
-        timer = setTimeout(tick, CHAR_MS + Math.random() * 40 - 20)
-      } else if (word < lengths.length - 1) {
+        timer = setTimeout(tick, words[word].charMs + Math.random() * 40 - 20)
+      } else if (word < words.length - 1) {
         word += 1
         char = 0
         timer = setTimeout(tick, WORD_PAUSE)
@@ -50,20 +51,73 @@ function useTypewriter(lengths, skip) {
     }
     timer = setTimeout(tick, START_DELAY)
     return () => clearTimeout(timer)
-  }, [lengths, skip])
+  }, [words, skip])
 
   return { counts, done }
 }
 
-// Entry point for visitors without access: collage, typed masthead, shared password.
+// Gap between LUNA and CIVIC STRATEGIES as a share of LUNA's letter height,
+// taken from the logo SVG (64 units of space under 492-unit-tall letters).
+const LOCKUP_GAP = 64 / 492
+
+// Fits the CIVIC STRATEGIES line to the LUNA line like the logo: letter-spacing
+// so the letters start and end exactly where LUNA's do, and a tight logo gap.
+// Measures the letter shapes themselves (not their boxes), so the two fonts'
+// different side bearings and ascents don't throw it off.
+function useLockup(titleRef) {
+  useEffect(() => {
+    const [luna, civic] = titleRef.current.querySelectorAll('.landing-line')
+    const ctx = document.createElement('canvas').getContext('2d')
+    const measure = (el, text) => {
+      const cs = getComputedStyle(el)
+      ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`
+      const m = ctx.measureText(text)
+      const lineHeight = parseFloat(cs.lineHeight)
+      // Where the baseline sits inside the line box.
+      const baseline = (lineHeight - m.fontBoundingBoxAscent - m.fontBoundingBoxDescent) / 2 + m.fontBoundingBoxAscent
+      return {
+        left: -m.actualBoundingBoxLeft,
+        right: m.actualBoundingBoxRight,
+        ascent: m.actualBoundingBoxAscent,
+        descent: m.actualBoundingBoxDescent,
+        lineHeight,
+        baseline,
+      }
+    }
+    const fit = () => {
+      const text = 'CIVIC STRATEGIES'
+      civic.style.letterSpacing = '0px'
+      civic.style.marginLeft = '0px'
+      const l = measure(luna, 'LUNA')
+      const c = measure(civic, text)
+      const spacing = (l.right - l.left - (c.right - c.left)) / (text.length - 1)
+      const gap = LOCKUP_GAP * (l.ascent + l.descent)
+      civic.style.letterSpacing = `${spacing}px`
+      civic.style.marginLeft = `${l.left - c.left}px`
+      civic.style.marginTop = `${gap - l.lineHeight + l.baseline + l.descent - c.baseline + c.ascent}px`
+    }
+    fit()
+    document.fonts.ready.then(fit)
+    document.fonts.addEventListener('loadingdone', fit)
+    window.addEventListener('resize', fit)
+    return () => {
+      document.fonts.removeEventListener('loadingdone', fit)
+      window.removeEventListener('resize', fit)
+    }
+  }, [titleRef])
+}
+
+// Entry point for visitors without access: goddess, typed masthead, shared password.
 export function Landing({ onUnlock }) {
   const [skip, setSkip] = useState(prefersReducedMotion)
-  const { counts, done } = useTypewriter(LENGTHS, skip)
+  const { counts, done } = useTypewriter(WORDS, skip)
   const [stage, setStage] = useState(skip ? 'form' : 'typing') // typing → tagline → form
 
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [shaking, setShaking] = useState(false)
+  const titleRef = useRef(null)
+  useLockup(titleRef)
 
   useEffect(() => {
     if (!done) return
@@ -96,24 +150,17 @@ export function Landing({ onUnlock }) {
   }
 
   // Index of the word currently being typed (the cursor sits after it).
-  const active = counts.findIndex((n, i) => n < LENGTHS[i])
+  const active = counts.findIndex((n, i) => n < WORDS[i].text.length)
   const cursorAt = done ? -1 : active
 
   return (
     <main className={`landing landing--${stage}`}>
       <div className="landing-art">
-        <img
-          className="landing-image"
-          src="/images/landing-collage.webp"
-          width="1254"
-          height="1254"
-          alt="Editorial collage: a 1950s woman in a tweed jacket studies paint swatches behind a bank of press microphones, surrounded by torn paper, the Capitol dome and crowd photographs."
-          fetchPriority="high"
-        />
+        <LandingGoddess skip={skip} />
       </div>
 
       <div className="landing-copy-col">
-        <h1 className="landing-title" aria-label="Luna Civic Strategies">
+        <h1 ref={titleRef} className="landing-title" aria-label="Luna Civic Strategies">
           {LINES.map((words) => (
             <span key={words[0].text} className={`landing-line landing-line--${words[0].font}`} aria-hidden="true">
               {words.map(({ text, i }, n) => (
@@ -129,7 +176,7 @@ export function Landing({ onUnlock }) {
           ))}
         </h1>
 
-        <p className="landing-copy">Luna Civic Strategies · Brand Hub</p>
+        <p className="landing-copy">Your brand hub. Built for the work ahead.</p>
 
         <div className="landing-form-wrap" aria-hidden={stage !== 'form'}>
           <form className="landing-form" onSubmit={submit}>

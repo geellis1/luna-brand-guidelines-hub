@@ -111,7 +111,6 @@ input:focus-visible {
   --landing-bg: #3e1921; /* Night Bordeaux */
   --landing-ink: #eee1d1; /* Almond Cream */
   --landing-accent: #9ab7d5; /* Powder Blue */
-  --landing-crimson: #741734; /* Deep Crimson */
   --curtain: cubic-bezier(0.22, 0.61, 0.36, 1);
   min-height: 100vh;
   min-height: 100dvh;
@@ -127,51 +126,69 @@ input:focus-visible {
   overflow: hidden;
 }
 
-/* Art: rises in like a curtain while the name types, then breathes forever.
-   The entrance is on the wrapper and the breathing on the image, so the two
-   transforms never fight. */
+/* Art: the goddess materialises path by path, then breathes forever.
+   No box around her: she sits straight on the background. */
 .landing-art {
   grid-area: art;
   display: grid;
   place-items: center;
-  animation: landing-art-in 3s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
 }
 
-@keyframes landing-art-in {
-  from {
-    opacity: 0;
-    clip-path: inset(100% 0 0 0);
-    transform: translateY(60px) scale(1.06);
-    filter: blur(10px);
-  }
-  45% {
-    opacity: 1;
-  }
-  to {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
-    transform: none;
-    filter: blur(0);
-  }
-}
-
-.landing-image {
-  display: block;
+.landing-goddess {
+  display: grid;
+  place-items: center;
   width: 100%;
-  max-width: min(720px, 86vh);
-  height: auto;
-  /* Transparent cut-out: it sits straight on the background, no box. */
-  animation: landing-breathe 6s ease-in-out infinite;
+}
+
+.landing-goddess svg {
+  display: block;
+  aspect-ratio: 941 / 1475;
+  height: min(88vh, 1200px);
+  width: auto;
+  max-width: 100%;
+}
+
+/* Every path is cream line art. The fills are presentation attributes, so
+   the paths themselves are targeted (a group fill wouldn't override them). */
+.landing-goddess #luna-goddess path {
+  fill: var(--landing-ink);
+}
+
+/* Hidden until revealed: first the raw paths, then the bands JS groups them into. */
+.landing-goddess #luna-goddess > * {
+  opacity: 0;
+}
+
+.landing-goddess--revealing #luna-goddess > g {
+  animation: goddess-path-in 700ms ease-out both; /* per-band delays set in JS */
+}
+
+.landing-goddess--shown #luna-goddess > * {
+  opacity: 1;
+}
+
+.landing-goddess--shown svg {
+  transform-origin: 50% 50%;
+  animation: goddess-breathe 9s ease-in-out infinite;
   will-change: transform;
 }
 
-@keyframes landing-breathe {
+@keyframes goddess-path-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes goddess-breathe {
   0%,
   100% {
-    transform: translateY(0) scale(1);
+    transform: scale(1);
   }
   50% {
-    transform: translateY(-10px) scale(1.008);
+    transform: scale(1.02);
   }
 }
 
@@ -181,8 +198,11 @@ input:focus-visible {
   }
 }
 
+/* Centred in its half, so it sits closer to the goddess. */
 .landing-copy-col {
   grid-area: copy;
+  justify-self: center;
+  width: fit-content;
   max-width: 640px;
 }
 
@@ -192,7 +212,7 @@ input:focus-visible {
 
 .landing-title {
   margin: 0;
-  font-size: clamp(52px, 7.4vw, 140px);
+  font-size: clamp(58px, 8.4vw, 160px);
   font-weight: 400;
   line-height: 0.92;
   text-transform: uppercase;
@@ -210,14 +230,15 @@ input:focus-visible {
   color: var(--landing-ink);
 }
 
-/* Sized so CIVIC STRATEGIES stays on one line, about as wide as LUNA. */
+/* Letter-spacing and the gap above are fitted to LUNA in JS (useLockup);
+   0.13em is a close stand-in until the fonts have loaded. */
 .landing-line--cotoris {
   font-family: 'CotorisFont', var(--ui);
   font-weight: 700;
   font-size: 0.41em;
-  line-height: 1.5;
-  letter-spacing: 0.12em;
-  color: var(--landing-accent);
+  line-height: 1;
+  letter-spacing: 0.13em;
+  color: var(--landing-ink);
 }
 
 .type-ghost {
@@ -299,13 +320,13 @@ input:focus-visible {
   font-size: 16px;
   color: var(--landing-ink);
   background: transparent;
-  border: 1px solid var(--landing-crimson);
+  border: 1px solid var(--landing-accent);
   border-radius: 14px;
   padding: 13px 16px;
 }
 
 .landing-form input:focus {
-  box-shadow: 0 0 0 1px var(--landing-crimson);
+  box-shadow: 0 0 0 1px var(--landing-accent);
 }
 
 .landing-form input.is-shaking {
@@ -327,13 +348,14 @@ input:focus-visible {
   width: 100%;
   padding: 13px 20px;
   border-radius: 14px;
-  background: var(--landing-crimson);
-  border-color: var(--landing-crimson);
-  color: var(--landing-ink);
+  background: var(--landing-accent);
+  border-color: var(--landing-accent);
+  color: var(--landing-bg);
+  font-weight: 700;
 }
 
 .landing-form input::placeholder {
-  color: rgba(238, 225, 209, 0.5);
+  color: var(--landing-accent);
 }
 
 .landing-form input:focus {
@@ -348,16 +370,11 @@ input:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-art {
-    animation: none;
-    opacity: 1;
-  }
-
   .landing-form input.is-shaking {
     animation-duration: 0.01s;
   }
 
-  .landing-image,
+  .landing-goddess--shown svg,
   .type-cursor {
     animation: none;
   }
@@ -2394,12 +2411,17 @@ html.touring {
     padding-top: 16px;
   }
 
-  .landing-image {
-    max-width: min(100%, 46vh);
+  .landing-goddess svg {
+    height: min(46vh, 520px);
+  }
+
+  .landing-copy-col {
+    justify-self: stretch;
+    width: auto;
   }
 
   .landing-title {
-    font-size: clamp(44px, 14vw, 80px);
+    font-size: clamp(48px, 15.5vw, 88px);
   }
 
 
