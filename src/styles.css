@@ -29,7 +29,7 @@
   --bg: #f5f0e8; /* cream */
   --surface: #fbf8f3;
   --ink: #3e1921; /* Night Bordeaux */
-  --muted: #7d6a6c;
+  --muted: rgba(62, 25, 33, 0.7); /* Night Bordeaux, for secondary text */
   --line: #e3d9cc;
   --accent: #9ab7d5; /* Powder Blue */
   --primary: #741734; /* Deep Crimson */
@@ -454,17 +454,11 @@ input:focus-visible {
   font-family: var(--brand-label);
   font-weight: 700;
   font-size: 13px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink);
   white-space: nowrap;
   cursor: pointer;
-  transition: color 0.2s;
-}
-
-.hub-tab:hover,
-.hub-tab[aria-current='page'] {
-  color: var(--ink);
 }
 
 .hub-tab[aria-current='page']::after {
@@ -488,8 +482,11 @@ input:focus-visible {
   margin: 0 0 clamp(28px, 4vw, 48px);
   font-family: var(--brand-display);
   font-weight: 400;
-  font-size: clamp(40px, 6vw, 72px);
+  font-size: clamp(36px, 5.2vw, 64px);
   line-height: 1;
+  /* Capitals: Shunsine's lowercase r ends in a curl that reads like a caret. */
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
   color: var(--ink);
 }
 
@@ -497,10 +494,10 @@ input:focus-visible {
   margin: clamp(44px, 6vw, 64px) 0 20px;
   font-family: var(--brand-label);
   font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.16em;
+  font-size: 15px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: rgba(62, 25, 33, 0.6);
 }
 
 .hub-heading + .hub-subheading,
@@ -615,10 +612,10 @@ input:focus-visible {
 .control-label {
   font-family: var(--brand-label);
   font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 0.16em;
+  font-size: 14px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: rgba(62, 25, 33, 0.6);
 }
 
 .swatch-row {
