@@ -14,7 +14,7 @@ export function LogoBuilder() {
   const size = SIZES.find((s) => s.key === sizeKey)
 
   const download = () =>
-    run('builder', () => logoPng({ luna, civic, width: size.width, height: size.height }), `luna-logo-${size.key}.png`)
+    run('builder', () => logoPng({ luna, civic, width: size.width, height: size.height }), `luna-logo-${size.key}@2x.png`)
 
   return (
     <section aria-labelledby="builder-title">
@@ -45,7 +45,7 @@ export function LogoBuilder() {
               >
                 {s.label}
                 <span className="size-dims">
-                  {s.width} × {s.height}px
+                  {s.width} × {s.height}px · @2x
                 </span>
               </button>
             ))}

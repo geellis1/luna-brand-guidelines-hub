@@ -56,7 +56,7 @@ export function DownloadsView() {
                       disabled={busy === key}
                       aria-label={`Download ${logo.name} logo, ${s.label}, ${s.width} by ${s.height} pixels`}
                       onClick={() =>
-                        run(key, () => logoPng({ luna: logo.hex, civic: logo.hex, width: s.width, height: s.height }), `luna-logo-${logo.key}-${s.key}.png`)
+                        run(key, () => logoPng({ luna: logo.hex, civic: logo.hex, width: s.width, height: s.height }), `luna-logo-${logo.key}-${s.key}@2x.png`)
                       }
                     >
                       {busy === key ? '…' : s.label}

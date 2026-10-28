@@ -37,17 +37,22 @@ const toBlob = (canvas) =>
     canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Could not create the PNG.'))), 'image/png'),
   )
 
-// PNG of the logo at width × height, transparent, fitted and centred.
-export async function logoPng({ luna, civic, width, height }) {
-  const scale = Math.min(width / VIEW_W, height / VIEW_H)
+// PNG of the logo at width × height (× pixelRatio for sharp, high-density
+// screens), fitted and centred without distortion on a transparent canvas.
+export async function logoPng({ luna, civic, width, height, pixelRatio = 2 }) {
+  const [canvasW, canvasH] = [Math.round(width * pixelRatio), Math.round(height * pixelRatio)]
+  const scale = Math.min(canvasW / VIEW_W, canvasH / VIEW_H)
   const [w, h] = [VIEW_W * scale, VIEW_H * scale]
-  // Rasterise the vector at its drawn size so edges stay crisp.
+  // Rasterise the vector at its final pixel size so edges stay crisp.
   const svg = logoMarkup({ luna, civic, width: w, height: h })
   const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
   try {
     const img = await loadImage(url)
-    const canvas = Object.assign(document.createElement('canvas'), { width, height })
-    canvas.getContext('2d').drawImage(img, (width - w) / 2, (height - h) / 2, w, h)
+    // A fresh canvas is fully transparent; nothing paints a background.
+    const canvas = Object.assign(document.createElement('canvas'), { width: canvasW, height: canvasH })
+    const ctx = canvas.getContext('2d')
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(img, (canvasW - w) / 2, (canvasH - h) / 2, w, h)
     return await toBlob(canvas)
   } finally {
     URL.revokeObjectURL(url)
