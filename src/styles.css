@@ -443,7 +443,7 @@ input:focus-visible {
 .hub-logo {
   display: block;
   flex: none;
-  width: clamp(96px, 9vw, 116px);
+  width: clamp(115px, 10.8vw, 140px);
   color: var(--ink);
 }
 
@@ -548,8 +548,8 @@ input:focus-visible {
   flex-direction: column;
   justify-content: space-between;
   min-height: clamp(240px, 28vw, 340px);
-  padding: clamp(22px, 2.6vw, 36px);
   border-radius: 4px;
+  overflow: hidden;
 }
 
 .color-card:nth-child(-n + 2) {
@@ -563,56 +563,46 @@ input:focus-visible {
   font-size: clamp(18px, 1.6vw, 22px);
   line-height: 1.2;
   opacity: 0.9;
+  padding: clamp(22px, 2.6vw, 36px);
 }
 
-.color-card-foot {
+/* Semi-transparent dark bar across the bottom; the same tint on every card. */
+.color-card-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  width: 100%;
+  padding: 16px clamp(18px, 2.2vw, 28px);
+  border: 0;
+  background: rgba(30, 10, 14, 0.22);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.color-card-bar:hover {
+  background: rgba(30, 10, 14, 0.32);
+}
+
+.color-card-bar:focus-visible {
+  outline: 1.5px solid currentColor;
+  outline-offset: -5px;
 }
 
 .color-card-hex {
   font-family: var(--brand-label);
   font-weight: 700;
+  font-size: clamp(16px, 1.4vw, 18px);
+  letter-spacing: 0.1em;
+}
+
+.color-card-copy {
   font-size: 12px;
-  letter-spacing: 0.12em;
-  opacity: 0.7;
-}
-
-/* Small, quiet pill: an icon, or "Copied" for a moment after a click. */
-.copy-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 28px;
-  min-width: 28px;
-  padding: 0 9px;
-  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
-  border-radius: 999px;
-  background: transparent;
-  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  opacity: 0.75;
-  transition:
-    opacity 0.2s,
-    background-color 0.2s;
-}
-
-.copy-button:hover {
-  opacity: 1;
-  background: color-mix(in srgb, currentColor 12%, transparent);
-}
-
-.copy-button svg {
-  display: block;
-}
-
-.color-card :focus-visible {
-  outline-color: currentColor;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.85;
 }
 
 /* ── Logo Builder ────────────────────────────────────────── */
@@ -626,8 +616,58 @@ input:focus-visible {
   border-radius: var(--radius);
 }
 
+/* Logo on the left; the tether column is as tall as the logo, so each row can
+   be placed at its word's vertical centre (LUNA 0–492, CIVIC 556–695 of 695). */
+.builder-lockup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  column-gap: 20px;
+  width: min(100%, 1000px);
+}
+
 .builder-logo {
-  width: min(100%, 720px);
+  width: 100%;
+}
+
+.builder-tethers {
+  position: relative;
+  width: 400px;
+}
+
+.tether {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: grid;
+  gap: 10px;
+}
+
+/* Offset by half the head's height so the rule lines up with the word. */
+.tether--luna {
+  top: calc(35.4% - 9px);
+}
+
+.tether--civic {
+  top: calc(90% - 9px);
+}
+
+.tether-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 18px;
+}
+
+.tether-rule {
+  flex: none;
+  width: 40px;
+  height: 1px;
+  background: rgba(62, 25, 33, 0.3);
+}
+
+.tether .swatch-row {
+  padding-left: 52px; /* rule + gap: swatches start under the label */
 }
 
 .builder-controls {
@@ -668,7 +708,7 @@ input:focus-visible {
 
 .swatch[aria-checked='true'] {
   box-shadow:
-    0 0 0 3px var(--bg),
+    0 0 0 3px var(--surface),
     0 0 0 5px var(--ink);
 }
 
@@ -805,6 +845,32 @@ input:focus-visible {
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .builder-lockup {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: clamp(28px, 5vw, 40px);
+  }
+
+  .builder-tethers {
+    position: static;
+    display: grid;
+    gap: 22px;
+    width: auto;
+  }
+
+  .tether {
+    position: static;
+  }
+
+  .tether-rule {
+    display: none;
+  }
+
+  .tether .swatch-row {
+    padding-left: 0;
+  }
+}
+
 @media (max-width: 860px) {
   .color-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -871,6 +937,10 @@ input:focus-visible {
   .hub-tab {
     font-size: 11px;
     letter-spacing: 0.08em;
+  }
+
+  .swatch-row {
+    gap: 10px;
   }
 
   .swatch {

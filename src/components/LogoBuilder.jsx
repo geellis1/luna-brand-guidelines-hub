@@ -22,14 +22,18 @@ export function LogoBuilder() {
         Logo builder
       </h1>
 
+      {/* Each swatch row sits beside the word it colours, tied to it by a rule. */}
       <div className="builder-stage">
-        <Logo className="builder-logo" luna={luna} civic={civic} label="Logo preview" />
+        <div className="builder-lockup">
+          <Logo className="builder-logo" luna={luna} civic={civic} label="Logo preview" />
+          <div className="builder-tethers">
+            <SwatchRow className="tether tether--luna" label="LUNA" value={luna} onChange={setLuna} />
+            <SwatchRow className="tether tether--civic" label="CIVIC STRATEGIES" value={civic} onChange={setCivic} />
+          </div>
+        </div>
       </div>
 
       <div className="builder-controls">
-        <SwatchRow label="LUNA color" value={luna} onChange={setLuna} />
-        <SwatchRow label="CIVIC STRATEGIES color" value={civic} onChange={setCivic} />
-
         <div className="control">
           <span className="control-label" id="size-label">
             Size
@@ -65,13 +69,16 @@ export function LogoBuilder() {
   )
 }
 
-function SwatchRow({ label, value, onChange }) {
+function SwatchRow({ className, label, value, onChange }) {
   const labelId = useId()
   return (
-    <div className="control">
-      <span className="control-label" id={labelId}>
-        {label}
-      </span>
+    <div className={className}>
+      <div className="tether-head">
+        <span className="tether-rule" aria-hidden="true" />
+        <span className="control-label" id={labelId}>
+          {label}
+        </span>
+      </div>
       <div className="swatch-row" role="radiogroup" aria-labelledby={labelId}>
         {SWATCHES.map((c) => (
           <button

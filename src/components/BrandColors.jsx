@@ -16,15 +16,6 @@ export function BrandColors() {
   )
 }
 
-function CopyIcon() {
-  return (
-    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
-      <path d="M10.5 3.5v-.5A1.5 1.5 0 0 0 9 1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.5" />
-    </svg>
-  )
-}
-
 function copyWithSelection(text) {
   const field = Object.assign(document.createElement('textarea'), { value: text, readOnly: true })
   field.style.cssText = 'position:fixed;opacity:0;pointer-events:none'
@@ -57,18 +48,18 @@ function ColorCard({ color }) {
   return (
     <li className="color-card" style={{ background: color.hex, color: textOn(color.hex) }}>
       <span className="color-card-name">{color.name}</span>
-      <div className="color-card-foot">
+      {/* The whole bar is the copy button: the hex on the left, its status on the right. */}
+      <button
+        type="button"
+        className="color-card-bar"
+        onClick={copy}
+        aria-label={`Copy ${color.name} hex code ${color.hex}`}
+      >
         <span className="color-card-hex">{color.hex}</span>
-        <button
-          type="button"
-          className="copy-button"
-          onClick={copy}
-          aria-label={`Copy ${color.name} hex code ${color.hex}`}
-          title="Copy hex"
-        >
-          {copied ? 'Copied!' : <CopyIcon />}
-        </button>
-      </div>
+        <span className="color-card-copy" aria-hidden="true">
+          {copied ? 'Copied!' : 'Copy'}
+        </span>
+      </button>
       <span className="visually-hidden" role="status">
         {copied ? `${color.hex} copied` : ''}
       </span>
