@@ -35,11 +35,13 @@
   --primary: #741734; /* Deep Crimson */
   --danger: #a3191f;
 
-  --ui: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --ui: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
   --display: 'Frago', var(--serif);
-  --brand-display: 'ShunsineFont', var(--serif); /* display headings */
-  --brand-label: 'CotorisFont', var(--ui); /* subheadings and labels */
+  /* Brand faces are kept for brand moments (logo, colour names, font samples);
+     the interface itself is DM Sans. */
+  --brand-display: 'ShunsineFont', var(--serif);
+  --brand-label: 'CotorisFont', var(--ui);
 
   --gutter: clamp(16px, 4vw, 56px);
   --max: 1200px;
@@ -419,15 +421,29 @@ input:focus-visible {
   background: var(--bg);
 }
 
-.hub-header {
+.hub-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg);
+  border-bottom: 1px solid rgba(62, 25, 33, 0.12);
+}
+
+.hub-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
   max-width: var(--max);
+  height: 72px;
   margin: 0 auto;
-  padding: clamp(24px, 4vw, 40px) var(--gutter) 0;
+  padding: 0 var(--gutter);
 }
 
 .hub-logo {
   display: block;
-  width: clamp(120px, 14vw, 168px);
+  flex: none;
+  width: clamp(96px, 9vw, 116px);
   color: var(--ink);
 }
 
@@ -439,26 +455,33 @@ input:focus-visible {
 
 .hub-tabs {
   display: flex;
-  gap: clamp(20px, 4vw, 40px);
-  margin-top: clamp(28px, 4vw, 44px);
-  border-bottom: 1px solid var(--line);
-  overflow-x: auto;
-  scrollbar-width: none;
+  align-self: stretch;
+  gap: clamp(20px, 3vw, 36px);
 }
 
+/* Tabs fill the bar's height so the active underline sits on its border. */
 .hub-tab {
   position: relative;
-  padding: 0 0 14px;
+  display: flex;
+  align-items: center;
+  padding: 0;
   background: none;
   border: 0;
-  font-family: var(--brand-label);
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.18em;
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink);
   white-space: nowrap;
   cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.hub-tab:hover,
+.hub-tab[aria-current='page'] {
+  opacity: 1;
 }
 
 .hub-tab[aria-current='page']::after {
@@ -467,8 +490,7 @@ input:focus-visible {
   left: 0;
   right: 0;
   bottom: -1px;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
+  height: 2px;
   background: var(--accent);
 }
 
@@ -479,23 +501,21 @@ input:focus-visible {
 }
 
 .hub-heading {
-  margin: 0 0 clamp(28px, 4vw, 48px);
-  font-family: var(--brand-display);
-  font-weight: 400;
-  font-size: clamp(36px, 5.2vw, 64px);
-  line-height: 1;
-  /* Capitals: Shunsine's lowercase r ends in a curl that reads like a caret. */
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
+  margin: 0 0 clamp(28px, 4vw, 44px);
+  font-family: var(--ui);
+  font-weight: 500;
+  font-size: clamp(32px, 4.4vw, 48px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   color: var(--ink);
 }
 
 .hub-subheading {
   margin: clamp(44px, 6vw, 64px) 0 20px;
-  font-family: var(--brand-label);
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.04em;
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(62, 25, 33, 0.6);
 }
@@ -527,21 +547,22 @@ input:focus-visible {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: clamp(220px, 26vw, 320px);
-  padding: clamp(20px, 2.4vw, 32px);
-  border-radius: var(--radius);
+  min-height: clamp(240px, 28vw, 340px);
+  padding: clamp(22px, 2.6vw, 36px);
+  border-radius: 4px;
 }
 
 .color-card:nth-child(-n + 2) {
   grid-column: span 3;
-  min-height: clamp(260px, 32vw, 420px);
+  min-height: clamp(300px, 36vw, 460px);
 }
 
 .color-card-name {
   font-family: var(--brand-display);
   font-style: italic;
-  font-size: clamp(30px, 3.6vw, 52px);
-  line-height: 1.05;
+  font-size: clamp(18px, 1.6vw, 22px);
+  line-height: 1.2;
+  opacity: 0.9;
 }
 
 .color-card-foot {
@@ -554,20 +575,28 @@ input:focus-visible {
 .color-card-hex {
   font-family: var(--brand-label);
   font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.14em;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  opacity: 0.7;
 }
 
+/* Small, quiet pill: an icon, or "Copied" for a moment after a click. */
 .copy-button {
-  min-width: 84px;
-  padding: 7px 14px;
-  border: 1px solid currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
   border-radius: 999px;
   background: transparent;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  opacity: 0.85;
+  opacity: 0.75;
   transition:
     opacity 0.2s,
     background-color 0.2s;
@@ -575,7 +604,11 @@ input:focus-visible {
 
 .copy-button:hover {
   opacity: 1;
-  background: color-mix(in srgb, currentColor 14%, transparent);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.copy-button svg {
+  display: block;
 }
 
 .color-card :focus-visible {
@@ -610,10 +643,10 @@ input:focus-visible {
 }
 
 .control-label {
-  font-family: var(--brand-label);
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.04em;
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(62, 25, 33, 0.6);
 }
@@ -717,6 +750,7 @@ input:focus-visible {
 
 .asset-stage--swatches {
   display: flex;
+  align-items: stretch;
   padding: 0;
 }
 
@@ -788,6 +822,19 @@ input:focus-visible {
 }
 
 @media (max-width: 720px) {
+  .hub-nav-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    height: auto;
+    padding-top: 16px;
+  }
+
+  .hub-tabs {
+    justify-content: space-between;
+    height: 40px;
+  }
+
   .landing {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
@@ -819,11 +866,6 @@ input:focus-visible {
 
   .color-card:first-child {
     grid-column: span 1;
-  }
-
-  .hub-tabs {
-    justify-content: space-between;
-    gap: 12px;
   }
 
   .hub-tab {

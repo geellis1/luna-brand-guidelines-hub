@@ -7,8 +7,8 @@ import { LogoBuilder } from './components/LogoBuilder'
 import { DownloadsView } from './components/DownloadsView'
 
 const VIEWS = [
-  { key: 'colors', label: 'Brand Colors' },
-  { key: 'builder', label: 'Logo Builder' },
+  { key: 'colors', label: 'Brand colors' },
+  { key: 'builder', label: 'Logo builder' },
   { key: 'downloads', label: 'Downloads' },
 ]
 

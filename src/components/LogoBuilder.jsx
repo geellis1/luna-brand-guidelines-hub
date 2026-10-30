@@ -19,7 +19,7 @@ export function LogoBuilder() {
   return (
     <section aria-labelledby="builder-title">
       <h1 id="builder-title" className="hub-heading">
-        Logo Builder
+        Logo builder
       </h1>
 
       <div className="builder-stage">

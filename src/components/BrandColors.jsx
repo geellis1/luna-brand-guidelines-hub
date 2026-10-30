@@ -5,7 +5,7 @@ export function BrandColors() {
   return (
     <section aria-labelledby="colors-title">
       <h1 id="colors-title" className="hub-heading">
-        Brand Colors
+        Brand colors
       </h1>
       <ul className="color-cards">
         {COLORS.map((color) => (
@@ -13,6 +13,15 @@ export function BrandColors() {
         ))}
       </ul>
     </section>
+  )
+}
+
+function CopyIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
+      <path d="M10.5 3.5v-.5A1.5 1.5 0 0 0 9 1.5H4A1.5 1.5 0 0 0 2.5 3v5A1.5 1.5 0 0 0 4 9.5h.5" />
+    </svg>
   )
 }
 
@@ -50,8 +59,14 @@ function ColorCard({ color }) {
       <span className="color-card-name">{color.name}</span>
       <div className="color-card-foot">
         <span className="color-card-hex">{color.hex}</span>
-        <button type="button" className="copy-button" onClick={copy} aria-label={`Copy ${color.name} hex code ${color.hex}`}>
-          {copied ? 'Copied!' : 'Copy'}
+        <button
+          type="button"
+          className="copy-button"
+          onClick={copy}
+          aria-label={`Copy ${color.name} hex code ${color.hex}`}
+          title="Copy hex"
+        >
+          {copied ? 'Copied!' : <CopyIcon />}
         </button>
       </div>
       <span className="visually-hidden" role="status">
